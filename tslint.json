@@ -9,6 +9,7 @@
     "tslint-config-prettier"
   ],
   "rules": {
+    "no-with-statement": false,
     "mocha-no-side-effect-code": false,
     "missing-jsdoc": false,
     "no-relative-imports": false,

@@ -7,9 +7,11 @@
     "node": ">= 8.9.0"
   },
   "devDependencies": {
+    "@types/exit-hook": "^1.1.0",
     "@types/jest": "~23.3.1",
     "@types/noble": "0.0.37",
     "@types/node": "~8.10.25",
+    "@types/yargs": "^11.1.1",
     "jest": "~23.5.0",
     "prettier": "~1.14.2",
     "rimraf": "~2.6.2",
@@ -33,7 +35,10 @@
   "author": "Jakub Synowiec <github@jakubsynowiec.info>",
   "license": "APLv2",
   "dependencies": {
+    "exit-hook": "^2.0.0",
+    "influx": "^5.0.7",
     "noble": "^1.9.1",
-    "tslib": "~1.9.3"
+    "tslib": "~1.9.3",
+    "yargs": "^12.0.1"
   }
 }
