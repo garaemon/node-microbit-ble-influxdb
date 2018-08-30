@@ -1,6 +1,6 @@
 import * as BBCMicrobit from 'bbc-microbit';
-import * as yargs from 'yargs';
 import { InfluxDB } from 'influx';
+import * as yargs from 'yargs';
 
 let influx: InfluxDB = null;
 
@@ -10,7 +10,7 @@ const argv = yargs.option('influxdb', {}).default('database', 'home-sensors')
 const SAMPLING_PERIOD_MSEC = 160; // ms
 console.log('Scanning for microbit');
 
-BBCMicrobit.discover(microbit => {
+BBCMicrobit.discover((microbit: BBCMicrobit.Microbit) => {
   console.log(
     '\tdiscovered microbit: id = %s, address = %s',
     microbit.id,
@@ -19,15 +19,17 @@ BBCMicrobit.discover(microbit => {
   if (argv.influxdb !== undefined) {
     const databaseName = `${argv.database}-${microbit.id}`;
     influx = new InfluxDB({
-      host: argv.influxdb,
+      host: argv.influxdb as string,
       database: databaseName,
     });
-    influx.getDatabaseNames().then((databases: string[]) => {
+    influx.getDatabaseNames().then(async (databases: string[]) => {
       if (databases.indexOf(databaseName) === -1) {
-        influx.createDatabase(databaseName).then(() => {
+        await influx.createDatabase(databaseName).then(() => {
           console.log('database is created:', databaseName);
         });
       }
+    }).catch(() => {
+      console.error('Failed to get and create db');
     });
   }
   microbit.on('disconnect', () => {
@@ -40,8 +42,8 @@ BBCMicrobit.discover(microbit => {
       console.log('data', temperature);
       counter = 0;
     }
-    ++counter;
-    if (influx) {
+    counter = counter + 1;
+    if (influx !== null) {
       influx
         .writePoints([
           {

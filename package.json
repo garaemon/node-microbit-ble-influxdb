@@ -28,9 +28,10 @@
     "watch": "tsc -w -p tsconfig.release.json",
     "lint": "tslint -t stylish --project \"tsconfig.json\"",
     "pretest": "npm run lint",
-    "test": "npm run test-only",
-    "test-only": "jest --coverage",
-    "test:watch": "jest --watch"
+    "test": "npm run build",
+    "atest": "npm run test-only",
+    "atest-only": "jest --coverage",
+    "atest:watch": "jest --watch"
   },
   "author": "Jakub Synowiec <github@jakubsynowiec.info>",
   "license": "APLv2",
