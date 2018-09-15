@@ -1,0 +1,19 @@
+[Unit]
+Description=microbit service
+
+[Service]
+Type=simple
+Restart=always
+# EnvironmentFile=${PROJECT_DIR}/setup.sh
+After=bluetooth.target
+# Should wait for influxdb?
+ExecStart=${NODE_PATH}/node ${PROJECT_DIR}/build/src/main.js --influxdb localhost:8086
+StandardOutput=journal
+StandardError=journal
+LimitNOFILE=1006500
+LimitNPROC=1006500
+
+# Install section is required for autorun
+# Please enable linger by `sudo loginctl enable-linger ${USER}`
+[Install]
+WantedBy=default.target
