@@ -8,69 +8,81 @@ const argv = yargs.option('influxdb', {}).default('database', 'home-sensors')
   .argv;
 
 const SAMPLING_PERIOD_MSEC = 160; // ms
-console.log('Scanning for microbit');
 
-BBCMicrobit.discover((microbit: BBCMicrobit.Microbit) => {
-  console.log(
-    '\tdiscovered microbit: id = %s, address = %s',
-    microbit.id,
-    microbit.address,
-  );
-  if (argv.influxdb !== undefined) {
-    const databaseName = `${argv.database}-${microbit.id}`;
-    influx = new InfluxDB({
-      host: argv.influxdb as string,
-      database: databaseName,
-    });
-    influx.getDatabaseNames().then(async (databases: string[]) => {
-      if (databases.indexOf(databaseName) === -1) {
-        await influx.createDatabase(databaseName).then(() => {
-          console.log('database is created:', databaseName);
-        });
-      }
-    }).catch(() => {
-      console.error('Failed to get and create db');
-    });
-  }
-  microbit.on('disconnect', () => {
-    console.log('\tmicrobit disconnected!');
-    process.exit(0);
-  });
-  let counter: number = 0;
-  microbit.on('temperatureChange', (temperature: number) => {
-    if (counter % 100 === 0) {
-      console.log('data', temperature);
-      counter = 0;
-    }
-    counter = counter + 1;
-    if (influx !== null) {
+function discover() {
+  console.log('Scanning for microbit');
+  BBCMicrobit.discover((microbit: BBCMicrobit.Microbit) => {
+    console.log(
+      '\tdiscovered microbit: id = %s, address = %s',
+      microbit.id,
+      microbit.address,
+    );
+    if (argv.influxdb !== undefined) {
+      const databaseName = `${argv.database}-${microbit.id}`;
+      influx = new InfluxDB({
+        host: argv.influxdb as string,
+        database: databaseName,
+      });
       influx
-        .writePoints([
-          {
-            measurement: 'temperature',
-            fields: {
-              data: temperature,
-            },
-          },
-        ])
-        .catch((err: Error) => {
-          console.error('error saving data to InfluxDB', err);
+        .getDatabaseNames()
+        .then(async (databases: string[]) => {
+          if (databases.indexOf(databaseName) === -1) {
+            await influx.createDatabase(databaseName).then(() => {
+              console.log('database is created:', databaseName);
+            });
+          }
+        })
+        .catch(() => {
+          console.error('Failed to get and create db');
         });
     }
-  });
+    microbit.on('disconnect', () => {
+      console.log('\tmicrobit disconnected!');
+      // process.exit(0);
+      discover();
+    });
+    let counter: number = 0;
+    microbit.on('temperatureChange', (temperature: number) => {
+      if (counter % 100 === 0) {
+        console.log('data', temperature);
+        counter = 0;
+      }
+      counter = counter + 1;
+      if (influx !== null) {
+        influx
+          .writePoints([
+            {
+              measurement: 'temperature',
+              fields: {
+                data: temperature,
+              },
+            },
+          ])
+          .catch((err: Error) => {
+            if (err.message === 'No host available') {
+              console.error('no influxdb is ready...');
+            } else {
+              console.error('error saving data to InfluxDB', err);
+            }
+          });
+      }
+    });
 
-  console.log('connecting to microbit');
-  microbit.connectAndSetUp(() => {
-    console.log('\tconnected to microbit');
+    console.log('connecting to microbit');
+    microbit.connectAndSetUp(() => {
+      console.log('\tconnected to microbit');
 
-    console.log('setting temperature period to %d ms', SAMPLING_PERIOD_MSEC);
-    microbit.writeTemperaturePeriod(SAMPLING_PERIOD_MSEC, () => {
-      console.log('\ttemperature period set');
+      console.log('setting temperature period to %d ms', SAMPLING_PERIOD_MSEC);
+      microbit.writeTemperaturePeriod(SAMPLING_PERIOD_MSEC, () => {
+        console.log('\ttemperature period set');
 
-      console.log('subscribing to temperature');
-      microbit.subscribeTemperature(() => {
-        console.log('\tsubscribed to temperature');
+        console.log('subscribing to temperature');
+        microbit.subscribeTemperature(() => {
+          console.log('\tsubscribed to temperature');
+        });
       });
     });
   });
-});
+}
+
+discover();
