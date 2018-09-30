@@ -7,7 +7,6 @@
     "node": ">= 8.9.0"
   },
   "devDependencies": {
-    "@slack/client": "^4.6.0",
     "@types/exit-hook": "^1.1.0",
     "@types/jest": "~23.3.1",
     "@types/noble": "0.0.37",
@@ -37,6 +36,7 @@
   "author": "Jakub Synowiec <github@jakubsynowiec.info>",
   "license": "APLv2",
   "dependencies": {
+    "@slack/client": "^4.6.0",
     "bbc-microbit": "^0.2.0",
     "exit-hook": "^2.0.0",
     "influx": "^5.0.7",
