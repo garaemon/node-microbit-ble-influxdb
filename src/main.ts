@@ -13,8 +13,8 @@ const SAMPLING_PERIOD_MSEC = 10000; // ms
 async function notifySlack(text: string) {
   // SLACKBOT_INCOMING_WEBHOOK environmetal variable is required
   if (
-    !process.env.SLACKBOT_INCOMING_WEBHOOK === undefined &&
-    process.env.SLACKBOT_INCOMING_WEBHOOK !== ''
+    process.env.SLACKBOT_INCOMING_WEBHOOK === undefined ||
+    process.env.SLACKBOT_INCOMING_WEBHOOK === ''
   ) {
     return;
   }
@@ -56,7 +56,10 @@ function discover() {
     }
     microbit.on('disconnect', () => {
       console.log('\tmicrobit disconnected!');
-      notifySlack('disconnected from microbit');
+      notifySlack('disconnected from microbit')
+        .catch((e: Error) => {
+          console.error('error in notifySlack', e);
+        });
       // process.exit(0);
       discover();
     });
@@ -90,7 +93,10 @@ function discover() {
     console.log('connecting to microbit');
     microbit.connectAndSetUp(() => {
       console.log('\tconnected to microbit');
-      notifySlack('connected with microbit');
+      notifySlack('connected with microbit')
+        .catch((e: Error) => {
+          console.error('error in notifySlack', e);
+        });
       console.log('setting temperature period to %d ms', SAMPLING_PERIOD_MSEC);
       microbit.writeTemperaturePeriod(SAMPLING_PERIOD_MSEC, () => {
         console.log('\ttemperature period set');
