@@ -1,3 +1,4 @@
+import { IncomingWebhook } from '@slack/client';
 import * as BBCMicrobit from 'bbc-microbit';
 import { InfluxDB } from 'influx';
 import * as yargs from 'yargs';
@@ -8,6 +9,23 @@ const argv = yargs.option('influxdb', {}).default('database', 'home-sensors')
   .argv;
 
 const SAMPLING_PERIOD_MSEC = 10000; // ms
+
+async function notifySlack(text: string) {
+  // SLACKBOT_INCOMING_WEBHOOK environmetal variable is required
+  if (
+    !process.env.SLACKBOT_INCOMING_WEBHOOK === undefined &&
+    process.env.SLACKBOT_INCOMING_WEBHOOK !== ''
+  ) {
+    return;
+  }
+  const web = new IncomingWebhook(process.env.SLACKBOT_INCOMING_WEBHOOK);
+  try {
+    await web.send(text);
+    console.log('Done to communicate with slack');
+  } catch (e) {
+    console.error('Failed to communicate with slack', e);
+  }
+}
 
 function discover() {
   console.log('Scanning for microbit');
@@ -38,6 +56,7 @@ function discover() {
     }
     microbit.on('disconnect', () => {
       console.log('\tmicrobit disconnected!');
+      notifySlack('disconnected from microbit');
       // process.exit(0);
       discover();
     });
@@ -71,7 +90,7 @@ function discover() {
     console.log('connecting to microbit');
     microbit.connectAndSetUp(() => {
       console.log('\tconnected to microbit');
-
+      notifySlack('connected with microbit');
       console.log('setting temperature period to %d ms', SAMPLING_PERIOD_MSEC);
       microbit.writeTemperaturePeriod(SAMPLING_PERIOD_MSEC, () => {
         console.log('\ttemperature period set');
