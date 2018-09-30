@@ -7,7 +7,7 @@ let influx: InfluxDB = null;
 const argv = yargs.option('influxdb', {}).default('database', 'home-sensors')
   .argv;
 
-const SAMPLING_PERIOD_MSEC = 160; // ms
+const SAMPLING_PERIOD_MSEC = 10000; // ms
 
 function discover() {
   console.log('Scanning for microbit');
