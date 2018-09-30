@@ -5,6 +5,7 @@ Description=microbit service
 Type=simple
 Restart=always
 # EnvironmentFile=${PROJECT_DIR}/setup.sh
+Environment="SLACKBOT_INCOMING_WEBHOOK=${SLACKBOT_INCOMING_WEBHOOK}"
 After=bluetooth.target
 # Should wait for influxdb?
 ExecStart=${NODE_PATH}/node ${PROJECT_DIR}/build/src/main.js --influxdb localhost:8086

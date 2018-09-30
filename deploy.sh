@@ -13,6 +13,8 @@ ssh "$host" <<EOF
 source .nvm/nvm.sh
 export NODE_PATH=\$(dirname \$(which node))
 export PROJECT_DIR=\$(readlink -f ${directory})
+export SLACKBOT_INCOMING_WEBHOOK=${SLACKBOT_INCOMING_WEBHOOK:-}
+(cd \${PROJECT_DIR} && npm install --production)
 mkdir -p \${HOME}/.config/systemd/user/
 envsubst < ./${directory}/resources/microbit.service.template > \${HOME}/.config/systemd/user/microbit.service
 systemctl --user daemon-reload
